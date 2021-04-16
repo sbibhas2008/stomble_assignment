@@ -4,7 +4,7 @@ from stomble_assignment.src import setup_db
 setup_db.global_init()
 
 location = location_model.Location()
-location.name = "Mars"
+location.planet_name = "Mars"
 location.city_name = "Mars-123"
 location.spaceport_capacity = 3
 location.save()
