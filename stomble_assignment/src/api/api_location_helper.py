@@ -15,5 +15,12 @@ def get_all_locations():
             'spaceships': list(map(lambda x : x.id, location.spaceships))
         }
         formatted_locations.append(location_obj)
-    print(formatted_locations)
     return formatted_locations
+
+def add_new_location(city_name, planet_name, spaceport_capacity):
+    new_location = Location()
+    new_location.planet_name = planet_name
+    new_location.city_name = city_name
+    new_location.spaceport_capacity = spaceport_capacity
+    new_location.save()
+    return True
