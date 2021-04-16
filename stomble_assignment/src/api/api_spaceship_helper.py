@@ -7,7 +7,7 @@ def get_all_spaceships():
     formatted_spaceships = []
     for spaceship in spaceships:
         spaceship_obj = {
-            'id': spaceship.id,
+            'id': str(spaceship.id),
             'name': spaceship.name,
             'model': spaceship.model,
             'status': spaceship.status,
