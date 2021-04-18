@@ -1,13 +1,8 @@
 import flask
-from flask import request
-from flask_restplus import Resource, Api, reqparse, fields
+from flask_restplus import Api
 from api_location import api as namespace_location
 from api_spaceship import api as namespace_spaceship
-from api_spaceship_helper import get_all_spaceships
-from api_location_helper import get_all_locations, add_new_location
 from stomble_assignment.src import setup_db
-from bson import json_util
-import json
 
 setup_db.global_init()
 
