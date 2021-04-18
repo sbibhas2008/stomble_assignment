@@ -8,7 +8,7 @@ import json
 
 app = flask.Flask(__name__)
 api = Api(app)
-api = Namespace("Location")
+api = Namespace("Location", path="/")
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -29,7 +29,6 @@ class Add_Location(Resource):
     @api.doc(parser = locations_parser)
     @api.expect(locations_parser)
     def post(self):
-        args = locations_parser.parse_args()
         city_name = request.headers.get('cityName')
         planet_name = request.headers.get('planetName')
         spaceport_capacity = request.headers.get('spaceportCapacity')
@@ -46,6 +45,7 @@ class Location_Id(Resource):
             return {"Message": "Success", 'location': parse_json(location)}, 200
         return {"Message": "Not Found"}, 404
 
+    # TODO - confused about what to do if a spaceship is stationed on the location to be removed
     def delete(self, id):
         if delete_location_by_id(id):
             return {"Message": "Success"}, 200
