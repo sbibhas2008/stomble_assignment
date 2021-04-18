@@ -23,7 +23,13 @@ def is_valid_status(status):
     return False
 
 def get_location_ref(location):
-    return get_location_ref_by_id(location)
+    loc = None 
+    try:
+        loc = get_location_ref_by_id(location)
+    except:
+        return False
+    else:
+        return loc
 
 # before this function is invoked, all the params have been validated
 def add_new_spaceship(name, model, status, location):
@@ -35,41 +41,35 @@ def add_new_spaceship(name, model, status, location):
     new_spaceship.save()
 
     # now add the spaceship to the location
-    add_spaceship_to_location(str(location), new_spaceship.id)
-    return True
+    add_spaceship_to_location(str(location.id), new_spaceship.id)
+    return new_spaceship
 
 def location_has_capacity(location_id):
     return check_location_capacity_by_id(location_id)
 
 def get_spaceship_by_id(id):
-    for spaceship in Spaceship.objects:
-        if str(spaceship.id) == str(id):
-            return {
-                'id': str(spaceship.id),
-                'name': spaceship.name,
-                'model': spaceship.model,
-                'status': spaceship.status,
-                'location': str(spaceship.location.id)
-            }
-    return None
+    spaceship = None
+    try:
+        spaceship = Spaceship.objects.get(id=str(id))
+    except:
+        return None
+    return {
+        'id': str(spaceship.id),
+        'name': spaceship.name,
+        'model': spaceship.model,
+        'status': spaceship.status,
+        'location': str(spaceship.location.id)
+    }
 
 def delete_spaceship_by_id(id):
-    spaceship_obj = None
-    for spaceship in Spaceship.objects:
-        if str(spaceship.id) == str(id):
-            spaceship_obj = spaceship
-            break
-    if not spaceship_obj:
-        return False 
-    remove_spaceship(spaceship_obj.location.id, id)
-    spaceship_obj.delete()
-    return True
+    spaceship = Spaceship.objects.get(id=str(id))
+    remove_spaceship(spaceship.location.id, id)
+    spaceship.delete()
 
 def update_spaceship_status_by_id(id, status):
-    for spaceship in Spaceship.objects:
-        if str(spaceship.id) == str(id): 
-            spaceship.update(status=status)
-            return True
-    return False
+    spaceship = Spaceship.objects.get(id=str(id))
+    spaceship.update(status=status)
+    return spaceship
+
 
 

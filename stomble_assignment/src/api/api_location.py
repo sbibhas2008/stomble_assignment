@@ -1,7 +1,7 @@
 import flask
 from flask import request
 from flask_restplus import Resource, Api, reqparse, fields, Namespace
-from api_location_helper import get_all_locations, add_new_location, get_location_by_id, delete_location_by_id
+from api_location_helper import get_all_locations, add_new_location, get_location_by_id, delete_location_by_id, location_has_spaceships
 from stomble_assignment.src import setup_db
 from bson import json_util
 import json
@@ -32,10 +32,13 @@ class Add_Location(Resource):
         city_name = request.headers.get('cityName')
         planet_name = request.headers.get('planetName')
         spaceport_capacity = request.headers.get('spaceportCapacity')
-        if (add_new_location(city_name, planet_name, spaceport_capacity)):
-            return {"Message": "Success", 'location': 'TODO'}, 200
+        location = None
+        try:
+            location = add_new_location(city_name, planet_name, spaceport_capacity)
+        except:
+            return {"Message": "Failed! Internal Server Error!"}, 500
         else:
-            return {"Message": "Failed! Could not create new location!"}, 500
+            return {"Message": "Success", 'location': parse_json(str(location.id))}, 200
 
 @api.route('/location/<string:id>', methods=['GET', 'DELETE'])
 class Location_Id(Resource):
@@ -47,7 +50,16 @@ class Location_Id(Resource):
 
     # TODO - confused about what to do if a spaceship is stationed on the location to be removed
     def delete(self, id):
-        if delete_location_by_id(id):
+        if not get_location_by_id(id):
+            return {"Message": "No location by that id"}, 404
+        # TODO - confused about this
+        if location_has_spaceships(id):
+            return {"Message": "Failed, Location has spaceships stationed"}, 400
+        ############################
+        try:
+            delete_location_by_id(id)
+        except:
+            return {"Message": "Failed, Internal Server Error"}, 500
+        else:
             return {"Message": "Success"}, 200
-        return {"Message": "Failed, location matching to the ID not found."}, 400
 

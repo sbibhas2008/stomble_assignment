@@ -22,12 +22,15 @@ parser.add_argument('location', type=str, help="Hanger locationId where the spac
 
 @api.route('/spaceships', methods=['GET'])
 class All_Spaceships(Resource):
+
+    @api.doc(description="All Spaceships")
     def get(self):
         spaceships = get_all_spaceships()
         return {"spaceships":parse_json(spaceships)}, 200
 
 @api.route('/spaceship', methods=['POST'])
 class Add_Spaceship(Resource):
+
     @api.doc(parser = parser)
     @api.expect(parser)
     def post(self):
@@ -35,6 +38,7 @@ class Add_Spaceship(Resource):
         model = request.headers.get('model')
         status = request.headers.get('status')
         location = request.headers.get('location')
+        spaceship=None
         if not is_valid_status(status):
             return {"Message": "Failed! Invalid Status"}, 400
         location_ref = get_location_ref(location)
@@ -42,32 +46,48 @@ class Add_Spaceship(Resource):
             return {"Message": "Failed! Invalid Location"}, 400
         if not location_has_capacity(location):
             return {"Message": "Failed! Location Spaceport Capacity reached"}, 400
-        if add_new_spaceship(name, model, status, location_ref):
-            return {"Message": "Success", "spaceship": "TODO"}
-        return {"Message": "Failed! Internal Server Error!"}, 500
+        try :
+            spaceship = add_new_spaceship(name, model, status, location_ref)
+        except:    
+            return {"Message": "Failed! Internal Server Error!"}, 500
+        else:
+            return {"Message": "Success", "spaceship": parse_json(str(spaceship.id))}
 
 status_parser = reqparse.RequestParser()
 status_parser.add_argument('status', type=str, help="Station of the spaceship to be updated.", required=True, location='headers')
 
 @api.route('/spaceship/<string:id>', methods=['GET', 'PUT', 'DELETE'])
 class Spaceship_Id(Resource):
+
     def get(self, id):
         spaceship = get_spaceship_by_id(id)
         if not spaceship:
             return {"Message": "Failed! No spcaship by that id"}, 404
         return {"Message": "Success", "spaceship": parse_json(spaceship)}, 200
+
     @api.doc(parser = status_parser)
     @api.expect(status_parser)
     def put(self, id):
         status = request.headers.get('status')
+        spaceship = None 
         if not is_valid_status(status):
             return {"Message": "Invalid status"}, 400
         if not get_spaceship_by_id(id):
             return {"Message": "Invalid spaceship"}, 400
-        if not update_spaceship_status_by_id(id, status):
+        try:
+            spaceship = update_spaceship_status_by_id(id, status)
+        except:
             return {"Message": "Internal Server Error"}, 500
-        return {"Message": "Success"}, 200
+        else:
+            return {"Message": "Success", "spaceship": parse_json(str(spaceship.id))}, 200
+
     def delete(self, id):
-        if delete_spaceship_by_id(id):
+        if not get_spaceship_by_id(id):
+            return {"Message": "Failed! No spcaship by that id"}, 404
+        try:
+            delete_spaceship_by_id(id)
+        except:
+            return {"Message": "Failed"}, 400
+        else:
             return {"Message": "Success"}, 200
-        return {"Message": "Failed"}, 400
+        
