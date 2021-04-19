@@ -1,5 +1,0 @@
-setup.py
-stomble_assignment.egg-info/PKG-INFO
-stomble_assignment.egg-info/SOURCES.txt
-stomble_assignment.egg-info/dependency_links.txt
-stomble_assignment.egg-info/top_level.txt
