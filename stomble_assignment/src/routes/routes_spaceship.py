@@ -24,9 +24,11 @@ parser.add_argument('location', type=str, help="Hanger locationId where the spac
 class All_Spaceships(Resource):
 
     def get(self):
-        spaceships = spaceship_controller.get_all_spaceships()
-        if not spaceships:
-            return {"Message": "Failed"}, 404
+        spaceships = None
+        try:
+            spaceships = spaceship_controller.get_all_spaceships()
+        except:
+            return {"Message": "Failed, Internal Server Error"}, 500
         return {"Message": "Success", "Spaceships":parse_json(spaceships)}, 200
 
 @api.route('/spaceship', methods=['POST'])
@@ -62,6 +64,7 @@ status_parser.add_argument('status', type=str, help="Station of the spaceship to
 @api.route('/spaceship/<string:id>', methods=['GET', 'PUT', 'DELETE'])
 class Spaceship_Id(Resource):
 
+    @api.param('id', 'Id of the spaceship')
     def get(self, id):
         spaceship = spaceship_controller.get_spaceship_by_id(id)
         if not spaceship:
@@ -70,15 +73,16 @@ class Spaceship_Id(Resource):
 
     @api.doc(parser = status_parser)
     @api.expect(status_parser)
+    @api.param('id', 'Id of the spaceship')
     def put(self, id):
         status = request.headers.get('status')
+        if not spaceship_controller.get_spaceship_by_id(id):
+            return {"Message": "Invalid spaceship"}, 404
         if not status:
             return {"Message": "Invalid Parameters"}, 400
         spaceship = None 
         if not spaceship_controller.is_valid_status(status):
             return {"Message": "Invalid status"}, 400
-        if not spaceship_controller.get_spaceship_by_id(id):
-            return {"Message": "Invalid spaceship"}, 400
         try:
             spaceship = spaceship_controller.update_spaceship_status_by_id(id, status)
         except:
@@ -86,6 +90,7 @@ class Spaceship_Id(Resource):
         else:
             return {"Message": "Success", "Spaceship": parse_json(str(spaceship.id))}, 200
 
+    @api.param('id', 'Id of the spaceship')
     def delete(self, id):
         if not spaceship_controller.get_spaceship_by_id(id):
             return {"Message": "Failed! No spcaship by that id"}, 404

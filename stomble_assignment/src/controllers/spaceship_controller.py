@@ -66,7 +66,12 @@ def update_spaceship_status_by_id(id, status):
     return spaceship
 
 def is_operational(id):
-    return Spaceship.objects.get(id=str(id)).status == "operational"
+    res = None
+    try:
+        res = Spaceship.objects.get(id=str(id)).status == "operational"
+    except:
+        return False
+    return res
 
 def travel_spaceship(spaceship_id, destination_id):
     spaceship = Spaceship.objects.get(id=str(spaceship_id))

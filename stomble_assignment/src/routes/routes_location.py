@@ -17,14 +17,16 @@ def parse_json(data):
 locations_parser = reqparse.RequestParser()
 locations_parser.add_argument('cityName', type=str, help="Name of the city to be added.", required=True, location='headers')
 locations_parser.add_argument('planetName', type=str, help="Name of the planet to be added.", required=True, location='headers')
-locations_parser.add_argument('spaceportCapacity', type=int, help="Capacity of the spaceport to be added.", required=True, location='headers')
+locations_parser.add_argument('spaceportCapacity', type=int, help="Spaceport capacity of the location to be added.", required=True, location='headers')
 
 @api.route('/locations', methods=['GET'])
 class All_Locations(Resource):
     def get(self):
-        locations = location_controller.get_all_locations()
-        if not locations:
-            return {"Message": "Failed"}, 404
+        locations = None
+        try:
+            locations = location_controller.get_all_locations()
+        except:
+            return {"Message": "Failed, Internal Server Error"}, 500
         return {"Message": "Success", 'Locations': parse_json(locations)}
 
 @api.route('/location', methods=['POST'])
@@ -37,6 +39,8 @@ class Add_Location(Resource):
         spaceport_capacity = request.headers.get('spaceportCapacity')
         if not city_name or not planet_name or not spaceport_capacity:
             return {"Message": "Invalid Parameters"}, 400
+        if not spaceport_capacity.isnumeric():
+            return {"Message": "Invalid Spaceport Capacity"}, 400
         location = None
         try:
             location = location_controller.add_new_location(city_name, planet_name, spaceport_capacity)
@@ -47,12 +51,14 @@ class Add_Location(Resource):
 
 @api.route('/location/<string:id>', methods=['GET', 'DELETE'])
 class Location_Id(Resource):
+    @api.param('id', 'Id of the location')
     def get(self, id):
         location = location_controller.get_location_by_id(id)
         if location:
             return {"Message": "Success", 'Location': parse_json(location)}, 200
         return {"Message": "No location by that id"}, 404
-
+    
+    @api.param('id', 'Id of the location')
     def delete(self, id):
         if not location_controller.get_location_by_id(id):
             return {"Message": "No location by that id"}, 404
