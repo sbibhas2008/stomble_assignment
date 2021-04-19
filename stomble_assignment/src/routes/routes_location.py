@@ -22,8 +22,10 @@ locations_parser.add_argument('spaceportCapacity', type=int, help="Capacity of t
 @api.route('/locations', methods=['GET'])
 class All_Locations(Resource):
     def get(self):
-        all_locations = location_controller.get_all_locations()
-        return {"Message": "Success", 'locations': parse_json(all_locations)}
+        locations = location_controller.get_all_locations()
+        if not locations:
+            return {"Message": "Failed"}, 404
+        return {"Message": "Success", 'Locations': parse_json(locations)}
 
 @api.route('/location', methods=['POST'])
 class Add_Location(Resource):
@@ -33,21 +35,23 @@ class Add_Location(Resource):
         city_name = request.headers.get('cityName')
         planet_name = request.headers.get('planetName')
         spaceport_capacity = request.headers.get('spaceportCapacity')
+        if not city_name or not planet_name or not spaceport_capacity:
+            return {"Message": "Invalid Parameters"}, 400
         location = None
         try:
             location = location_controller.add_new_location(city_name, planet_name, spaceport_capacity)
         except:
             return {"Message": "Failed! Internal Server Error!"}, 500
         else:
-            return {"Message": "Success", 'location': parse_json(str(location.id))}, 200
+            return {"Message": "Success", 'Location': parse_json(str(location.id))}, 200
 
 @api.route('/location/<string:id>', methods=['GET', 'DELETE'])
 class Location_Id(Resource):
     def get(self, id):
         location = location_controller.get_location_by_id(id)
         if location:
-            return {"Message": "Success", 'location': parse_json(location)}, 200
-        return {"Message": "Not Found"}, 404
+            return {"Message": "Success", 'Location': parse_json(location)}, 200
+        return {"Message": "No location by that id"}, 404
 
     # TODO - confused about what to do if a spaceship is stationed on the location to be removed
     def delete(self, id):
