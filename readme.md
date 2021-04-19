@@ -35,6 +35,9 @@ python3 api.py
 ```
 
 ## Tests
+
+Before running the tests, make sure the API server is up and running. 
+
 ```bash
 make tests
 -- or -- 
