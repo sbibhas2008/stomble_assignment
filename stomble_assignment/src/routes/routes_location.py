@@ -53,14 +53,11 @@ class Location_Id(Resource):
             return {"Message": "Success", 'Location': parse_json(location)}, 200
         return {"Message": "No location by that id"}, 404
 
-    # TODO - confused about what to do if a spaceship is stationed on the location to be removed
     def delete(self, id):
         if not location_controller.get_location_by_id(id):
             return {"Message": "No location by that id"}, 404
-        # TODO - confused about this
         if location_controller.location_has_spaceships(id):
             return {"Message": "Failed, Location has spaceships stationed"}, 400
-        ############################
         try:
             location_controller.delete_location_by_id(id)
         except:

@@ -24,6 +24,10 @@ def add_new_location(city_name, planet_name, spaceport_capacity):
     new_location.save()
     return new_location
 
+'''
+    Functions requiring id
+'''
+
 def get_location_by_id(id):
     location = None
     try:

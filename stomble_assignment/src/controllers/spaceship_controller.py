@@ -3,7 +3,7 @@ from stomble_assignment.src.models.spaceship_model import Spaceship
 from stomble_assignment.src.models.location_model import Location
 from stomble_assignment.src.controllers import location_controller
 
-
+# returns all spaceships from db
 def get_all_spaceships():
     spaceships = Spaceship.objects()
     formatted_spaceships = []
@@ -18,20 +18,6 @@ def get_all_spaceships():
         formatted_spaceships.append(spaceship_obj)
     return formatted_spaceships
 
-def is_valid_status(status):
-    if status in ['operational', 'decommissioned', 'maintenance']:
-        return True
-    return False
-
-def get_location_ref(location):
-    loc = None 
-    try:
-        loc = location_controller.get_location_ref_by_id(location)
-    except:
-        return False
-    else:
-        return loc
-
 # before this function is invoked, all the params have been validated
 def add_new_spaceship(name, model, status, location):
     new_spaceship = Spaceship()
@@ -45,9 +31,16 @@ def add_new_spaceship(name, model, status, location):
     location_controller.add_spaceship_to_location(str(location.id), new_spaceship.id)
     return new_spaceship
 
-def location_has_capacity(location_id):
-    return location_controller.check_location_capacity_by_id(location_id)
+def is_valid_status(status):
+    if status in ['operational', 'decommissioned', 'maintenance']:
+        return True
+    return False
 
+'''
+    Functions requiring id
+'''
+
+# get spaceship id provided its id
 def get_spaceship_by_id(id):
     spaceship = None
     try:
@@ -83,4 +76,20 @@ def travel_spaceship(spaceship_id, destination_id):
     location_controller.add_spaceship_to_location(destination_id, spaceship.id)
     spaceship.update(location=destination)
 
+'''
+    Functions accessing location controller
+'''
 
+# returns location object provided its id
+def get_location_ref(location):
+    loc = None 
+    try:
+        loc = location_controller.get_location_ref_by_id(location)
+    except:
+        return False
+    else:
+        return loc
+
+# checks if a location can station more spaceships
+def location_has_capacity(location_id):
+    return location_controller.check_location_capacity_by_id(location_id)
