@@ -1,7 +1,7 @@
 import flask
 from flask import request
 from flask_restplus import Resource, Api, reqparse, fields, Namespace
-from api_spaceship_helper import get_all_spaceships, is_valid_status, get_location_ref, add_new_spaceship, location_has_capacity, get_spaceship_by_id, delete_spaceship_by_id, update_spaceship_status_by_id
+from api_spaceship_helper import get_all_spaceships, is_valid_status, get_location_ref, add_new_spaceship, location_has_capacity, get_spaceship_by_id, delete_spaceship_by_id, update_spaceship_status_by_id, is_operational, travel_spaceship
 from stomble_assignment.src import setup_db
 from bson import json_util
 import json
@@ -90,4 +90,30 @@ class Spaceship_Id(Resource):
             return {"Message": "Failed"}, 400
         else:
             return {"Message": "Success"}, 200
-        
+
+travel_parser = reqparse.RequestParser()
+travel_parser.add_argument('spaceship_id', type=str, help="Id of the travelling spaceship", required=True, location='headers')
+travel_parser.add_argument('destination_id', type=str, help="Id of the destination", required=True, location='headers')
+       
+@api.route('/spaceship/travel', methods=['PATCH'])
+class Travel(Resource):
+
+    @api.doc(parser = travel_parser)
+    @api.expect(travel_parser)   
+    def patch(self):
+        spaceship_id = request.headers.get('spaceship_id')
+        destination_id = request.headers.get('destination_id')
+        if not get_spaceship_by_id(spaceship_id):
+            return {"Message": "Failed, No spaceship by that id"}, 404
+        if not is_operational(spaceship_id):
+            return {"Message": "Failed, Only operational spaceships can travel"}, 400
+        if not get_location_ref(destination_id):
+            return {"Message": "Failed, No location by that id"}, 404
+        if not location_has_capacity(destination_id):
+            return {"Message": "Failed, Destination spaceport capacity limit has reached"}, 400
+        try:
+            travel_spaceship(spaceship_id, destination_id)
+        except:
+            return {"Message": "Failed, Internal Server Error"}, 500
+        return {"Message": "Success"}, 200
+

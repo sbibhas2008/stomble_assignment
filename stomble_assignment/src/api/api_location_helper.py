@@ -59,6 +59,7 @@ def add_spaceship_to_location(location_id, spaceship_id):
     all_spaceships.append(spaceship_id)
     location.update(spaceships=all_spaceships)
 
+
 def remove_spaceship(location_id, spaceship_id):
     location = Location.objects().get(id=str(location_id))
     new_spaceships = [spaceship for spaceship in location.spaceships if str(spaceship.id) != str(spaceship_id)]
