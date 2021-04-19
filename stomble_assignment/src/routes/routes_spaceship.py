@@ -1,7 +1,7 @@
 import flask
 from flask import request
 from flask_restplus import Resource, Api, reqparse, fields, Namespace
-from api_spaceship_helper import get_all_spaceships, is_valid_status, get_location_ref, add_new_spaceship, location_has_capacity, get_spaceship_by_id, delete_spaceship_by_id, update_spaceship_status_by_id, is_operational, travel_spaceship
+from stomble_assignment.src.controllers import spaceship_controller
 from stomble_assignment.src import setup_db
 from bson import json_util
 import json
@@ -25,7 +25,7 @@ class All_Spaceships(Resource):
 
     @api.doc(description="All Spaceships")
     def get(self):
-        spaceships = get_all_spaceships()
+        spaceships = spaceship_controller.get_all_spaceships()
         return {"spaceships":parse_json(spaceships)}, 200
 
 @api.route('/spaceship', methods=['POST'])
@@ -39,15 +39,15 @@ class Add_Spaceship(Resource):
         status = request.headers.get('status')
         location = request.headers.get('location')
         spaceship=None
-        if not is_valid_status(status):
+        if not spaceship_controller.is_valid_status(status):
             return {"Message": "Failed! Invalid Status"}, 400
-        location_ref = get_location_ref(location)
+        location_ref = spaceship_controller.get_location_ref(location)
         if not location_ref:
             return {"Message": "Failed! Invalid Location"}, 400
-        if not location_has_capacity(location):
+        if not spaceship_controller.location_has_capacity(location):
             return {"Message": "Failed! Location Spaceport Capacity reached"}, 400
         try :
-            spaceship = add_new_spaceship(name, model, status, location_ref)
+            spaceship = spaceship_controller.add_new_spaceship(name, model, status, location_ref)
         except:    
             return {"Message": "Failed! Internal Server Error!"}, 500
         else:
@@ -60,7 +60,7 @@ status_parser.add_argument('status', type=str, help="Station of the spaceship to
 class Spaceship_Id(Resource):
 
     def get(self, id):
-        spaceship = get_spaceship_by_id(id)
+        spaceship = spaceship_controller.get_spaceship_by_id(id)
         if not spaceship:
             return {"Message": "Failed! No spcaship by that id"}, 404
         return {"Message": "Success", "spaceship": parse_json(spaceship)}, 200
@@ -70,22 +70,22 @@ class Spaceship_Id(Resource):
     def put(self, id):
         status = request.headers.get('status')
         spaceship = None 
-        if not is_valid_status(status):
+        if not spaceship_controller.is_valid_status(status):
             return {"Message": "Invalid status"}, 400
-        if not get_spaceship_by_id(id):
+        if not spaceship_controller.get_spaceship_by_id(id):
             return {"Message": "Invalid spaceship"}, 400
         try:
-            spaceship = update_spaceship_status_by_id(id, status)
+            spaceship = spaceship_controller.update_spaceship_status_by_id(id, status)
         except:
             return {"Message": "Internal Server Error"}, 500
         else:
             return {"Message": "Success", "spaceship": parse_json(str(spaceship.id))}, 200
 
     def delete(self, id):
-        if not get_spaceship_by_id(id):
+        if not spaceship_controller.get_spaceship_by_id(id):
             return {"Message": "Failed! No spcaship by that id"}, 404
         try:
-            delete_spaceship_by_id(id)
+            spaceship_controller.delete_spaceship_by_id(id)
         except:
             return {"Message": "Failed"}, 400
         else:
@@ -103,16 +103,16 @@ class Travel(Resource):
     def patch(self):
         spaceship_id = request.headers.get('spaceship_id')
         destination_id = request.headers.get('destination_id')
-        if not get_spaceship_by_id(spaceship_id):
+        if not spaceship_controller.get_spaceship_by_id(spaceship_id):
             return {"Message": "Failed, No spaceship by that id"}, 404
-        if not is_operational(spaceship_id):
+        if not spaceship_controller.is_operational(spaceship_id):
             return {"Message": "Failed, Only operational spaceships can travel"}, 400
-        if not get_location_ref(destination_id):
+        if not spaceship_controller.get_location_ref(destination_id):
             return {"Message": "Failed, No location by that id"}, 404
-        if not location_has_capacity(destination_id):
+        if not spaceship_controller.location_has_capacity(destination_id):
             return {"Message": "Failed, Destination spaceport capacity limit has reached"}, 400
         try:
-            travel_spaceship(spaceship_id, destination_id)
+            spaceship_controller.travel_spaceship(spaceship_id, destination_id)
         except:
             return {"Message": "Failed, Internal Server Error"}, 500
         return {"Message": "Success"}, 200

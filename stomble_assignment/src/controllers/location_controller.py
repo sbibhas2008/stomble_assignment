@@ -1,7 +1,6 @@
 import mongoengine
-from stomble_assignment.src.db_models.spaceship_model import Spaceship
-from stomble_assignment.src.db_models.location_model import Location
-
+from stomble_assignment.src.models.spaceship_model import Spaceship
+from stomble_assignment.src.models.location_model import Location
 
 def get_all_locations():
     locations = Location.objects()

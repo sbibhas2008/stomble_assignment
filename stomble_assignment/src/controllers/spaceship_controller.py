@@ -1,7 +1,8 @@
 import mongoengine
-from stomble_assignment.src.db_models.spaceship_model import Spaceship
-from stomble_assignment.src.db_models.location_model import Location
-from api_location_helper import get_location_ref_by_id, add_spaceship_to_location, check_location_capacity_by_id, remove_spaceship
+from stomble_assignment.src.models.spaceship_model import Spaceship
+from stomble_assignment.src.models.location_model import Location
+from stomble_assignment.src.controllers import location_controller
+
 
 def get_all_spaceships():
     spaceships = Spaceship.objects()
@@ -25,7 +26,7 @@ def is_valid_status(status):
 def get_location_ref(location):
     loc = None 
     try:
-        loc = get_location_ref_by_id(location)
+        loc = location_controller.get_location_ref_by_id(location)
     except:
         return False
     else:
@@ -41,11 +42,11 @@ def add_new_spaceship(name, model, status, location):
     new_spaceship.save()
 
     # now add the spaceship to the location
-    add_spaceship_to_location(str(location.id), new_spaceship.id)
+    location_controller.add_spaceship_to_location(str(location.id), new_spaceship.id)
     return new_spaceship
 
 def location_has_capacity(location_id):
-    return check_location_capacity_by_id(location_id)
+    return location_controller.check_location_capacity_by_id(location_id)
 
 def get_spaceship_by_id(id):
     spaceship = None
@@ -63,7 +64,7 @@ def get_spaceship_by_id(id):
 
 def delete_spaceship_by_id(id):
     spaceship = Spaceship.objects.get(id=str(id))
-    remove_spaceship(spaceship.location.id, id)
+    location_controller.remove_spaceship(spaceship.location.id, id)
     spaceship.delete()
 
 def update_spaceship_status_by_id(id, status):
@@ -78,8 +79,8 @@ def travel_spaceship(spaceship_id, destination_id):
     spaceship = Spaceship.objects.get(id=str(spaceship_id))
     destination = get_location_ref(destination_id)
     current_location = spaceship.location.id
-    remove_spaceship(current_location, spaceship_id)
-    add_spaceship_to_location(destination_id, spaceship.id)
+    location_controller.remove_spaceship(current_location, spaceship_id)
+    location_controller.add_spaceship_to_location(destination_id, spaceship.id)
     spaceship.update(location=destination)
 
 
