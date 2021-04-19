@@ -15,7 +15,7 @@ python3 -m virtualenv venv
 Activate the virtual environment
 
 ```bash
-source /venv/bin/activate
+source venv/bin/activate
 ```
 Then run the command
 
